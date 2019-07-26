@@ -64,16 +64,19 @@ describe('nvim_get_keymap', function()
   end)
 
   it('works for other modes', function()
-    -- Add two mappings, one in insert and one normal
-    -- We'll only check the insert mode one
+    -- We'll check mappings except normal mode
     command('nnoremap not_going to_check')
 
     command('inoremap foo bar')
+    command('tnoremap foo bar')
     -- The table will be the same except for the mode
     local insert_table = shallowcopy(foo_bar_map_table)
     insert_table['mode'] = 'i'
+    local terminal_table = shallowcopy(foo_bar_map_table)
+    terminal_table['mode'] = 't'
 
     eq({insert_table}, meths.get_keymap('i'))
+    eq({terminal_table}, meths.get_keymap('t'))
   end)
 
   it('considers scope', function()
@@ -345,11 +348,6 @@ describe('nvim_set_keymap, nvim_del_keymap', function()
     to_return.expr = not opts.expr and 0 or 1
     to_return.sid = not opts.sid and 0 or opts.sid
     to_return.buffer = not opts.buffer and 0 or opts.buffer
-
-    -- mode 't' doesn't print when calling maparg
-    if mode == 't' then
-      to_return.mode = ''
-    end
 
     return to_return
   end
