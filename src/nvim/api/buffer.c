@@ -1478,9 +1478,21 @@ Integer nvim_buf_set_extmark(Buffer buffer, Integer ns_id,
 
       col2 = (colnr_T)v->data.integer;
     } else if (strequal("hl_group", k.data)) {
-      hl_id = api_object_to_hl_id(*v, "hl_group", err);
-      if (ERROR_SET(err)) {
-        goto error;
+      String hl_group;
+      switch (v->type) {
+        case kObjectTypeString:
+          hl_group = v->data.string;
+          hl_id = syn_check_group(
+              (char_u *)(hl_group.data),
+              (int)hl_group.size);
+          break;
+        case kObjectTypeInteger:
+          hl_id = (int)v->data.integer;
+          break;
+        default:
+          api_set_error(err, kErrorTypeValidation,
+                        "hl_group is not valid.");
+          goto error;
       }
     } else if (strequal("virt_text", k.data)) {
       if (v->type != kObjectTypeArray) {

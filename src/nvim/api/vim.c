@@ -1003,11 +1003,26 @@ void nvim_echo(String str, Dictionary opts, Error *err)
   bool history = false;
   for (size_t i = 0; i < opts.size; i++) {
     String k = opts.items[i].key;
-    Object v = opts.items[i].value;
+    Object *v = &opts.items[i].value;
     if (strequal("hl_group", k.data)) {
-      hl_id = api_object_to_hl_id(v, "hl_group", err);
+      String hl_group;
+      switch (v->type) {
+        case kObjectTypeString:
+          hl_group = v->data.string;
+          hl_id = syn_check_group(
+              (char_u *)(hl_group.data),
+              (int)hl_group.size);
+          break;
+        case kObjectTypeInteger:
+          hl_id = (int)v->data.integer;
+          break;
+        default:
+          api_set_error(err, kErrorTypeValidation,
+                        "hl_group is not valid.");
+          return;
+      }
     } else if (strequal("history", k.data)) {
-      history = api_object_to_bool(v, "history", false, err);
+      history = api_object_to_bool(*v, "history", false, err);
     } else {
       api_set_error(err, kErrorTypeValidation, "unexpected key: %s", k.data);
       return;

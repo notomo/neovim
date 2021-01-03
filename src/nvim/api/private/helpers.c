@@ -1641,26 +1641,6 @@ bool api_object_to_bool(Object obj, const char *what,
   }
 }
 
-/// Force obj to highlight group id.
-/// @param obj          The object to coerce to a hl_id
-/// @param what         The name of the object, used for error message
-/// @param err          Set if there was an error in converting
-/// @return highlight group id if success, else 0
-int api_object_to_hl_id(Object obj, const char *what, Error *err)
-{
-  String hl_group;
-  switch (obj.type) {
-    case kObjectTypeString:
-      hl_group = obj.data.string;
-      return syn_check_group((char_u *)(hl_group.data), (int)hl_group.size);
-    case kObjectTypeInteger:
-      return (int)obj.data.integer;
-    default:
-      api_set_error(err, kErrorTypeValidation, "%s is not valid.", what);
-      return 0;
-  }
-}
-
 const char *describe_ns(NS ns_id)
 {
   String name;
