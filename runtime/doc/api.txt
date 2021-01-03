@@ -663,6 +663,16 @@ nvim_del_var({name})                                          *nvim_del_var()*
                 Parameters: ~
                     {name}  Variable name
 
+nvim_echo({str}, {opts})                                         *nvim_echo()*
+                Echo a message.
+
+                Parameters: ~
+                    {str}   Message
+                    {opts}  Optional parameters. Keys:
+                            • hl_group: name of the highlight group used to
+                              highlight.
+                            • history: if true, add to |message-history|.
+
 nvim_err_write({str})                                       *nvim_err_write()*
                 Writes a message to the Vim error buffer. Does not append
                 "\n", the message is buffered (won't display) until a linefeed

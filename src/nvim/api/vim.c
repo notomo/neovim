@@ -990,6 +990,42 @@ void nvim_set_option(uint64_t channel_id, String name, Object value, Error *err)
   set_option_to(channel_id, NULL, SREQ_GLOBAL, name, value, err);
 }
 
+/// Echo a message.
+///
+/// @param str Message
+/// @param opts Optional parameters. Keys:
+///          - hl_group: name of the highlight group used to highlight.
+///          - history: if true, add to |message-history|.
+void nvim_echo(String str, Dictionary opts, Error *err)
+  FUNC_API_SINCE(7)
+{
+  int hl_id = 0;
+  bool history = false;
+  for (size_t i = 0; i < opts.size; i++) {
+    String k = opts.items[i].key;
+    Object v = opts.items[i].value;
+    if (strequal("hl_group", k.data)) {
+      hl_id = api_object_to_hl_id(v, "hl_group", err);
+    } else if (strequal("history", k.data)) {
+      history = api_object_to_bool(v, "history", false, err);
+    } else {
+      api_set_error(err, kErrorTypeValidation, "unexpected key: %s", k.data);
+      return;
+    }
+  }
+
+  int attr = hl_id > 0 ? syn_id2attr(hl_id) : 0;
+  if (history) {
+    attr |= MSG_HIST;
+  }
+
+  no_wait_return++;
+  bool need_clear = true;
+  msg_multiline_attr((const char *)str.data, attr, false, &need_clear);
+  no_wait_return--;
+  msg_end();
+}
+
 /// Writes a message to the Vim output buffer. Does not append "\n", the
 /// message is buffered (won't display) until a linefeed is written.
 ///
